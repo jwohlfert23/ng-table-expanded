@@ -1,3 +1,4 @@
+
 var mountFolder = function(connect, dir) {
     return connect.static(require('path').resolve(dir));
 };

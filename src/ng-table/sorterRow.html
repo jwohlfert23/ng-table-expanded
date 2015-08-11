@@ -1,18 +1,43 @@
 <tr>
-    <th title="{{$column.headerTitle(this)}}"
-        ng-repeat="$column in $columns"
-        ng-class="{
+    <th
+            ng-if="expanded"
+            title="{{$column.headerTitle(this)}}"
+            ng-repeat="$column in $columns"
+            ng-class="{
                     'sortable': $column.sortable(this),
                     'sort-asc': params.sorting()[$column.sortable(this)]=='asc',
                     'sort-desc': params.sorting()[$column.sortable(this)]=='desc'
                   }"
-        ng-click="sortBy($column, $event)"
-        ng-if="$column.show(this)"
-        ng-init="template = $column.headerTemplateURL(this)"
-        class="header {{$column.class(this)}}">
-        <div ng-if="!template" class="ng-table-header" ng-class="{'sort-indicator': params.settings().sortingIndicator == 'div'}">
-            <span ng-bind="$column.title(this)" ng-class="{'sort-indicator': params.settings().sortingIndicator == 'span'}"></span>
+            ng-click="sortBy($column, $event)"
+            ng-if="$column.show(this)"
+            ng-init="template = $column.headerTemplateURL(this)"
+            class="header {{$column.class(this)}}">
+        <div ng-if="!template" class="ng-table-header"
+             ng-class="{'sort-indicator': params.settings().sortingIndicator == 'div'}">
+            <span ng-bind="$column.title(this)"
+                  ng-class="{'sort-indicator': params.settings().sortingIndicator == 'span'}"></span>
         </div>
         <div ng-if="template" ng-include="template"></div>
     </th>
+
+    <td ng-if="!expanded" style="background: #eee; padding-top: 3px; padding-bottom: 3px; text-align:center">
+       <span dropdown class="dropdown">
+      <a href id="simple-dropdown" dropdown-toggle style="font-size: 12px; color:#222">
+          Sort By &or;
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="simple-dropdown">
+          <li ng-repeat="$column in $columns" ng-class="{
+              'active': params.sorting()[$column.sortable(this)],
+                    'sort-asc': params.sorting()[$column.sortable(this)]=='asc',
+                    'sort-desc': params.sorting()[$column.sortable(this)]=='desc'
+                  }">
+              <a
+                      ng-if="$column.sortable(this)"
+                      ng-click="sortBy($column, $event)">
+                  {{$column.title(this)}}
+              </a>
+          </li>
+      </ul>
+    </span>
+    </td>
 </tr>
