@@ -622,7 +622,7 @@
         console.log(value);
         // reset to first page because can be blank page
         return angular.isDefined(value) ? this.parameters({
-          'search': value,
+          'query': value,
           'page': 1
         }) : params.search;
       };
@@ -986,7 +986,7 @@
         count: 10,
         filter: {},
         sorting: {},
-        search: null,
+        query: null,
         group: {},
         groupBy: null
       };
@@ -1114,8 +1114,8 @@
       $scope.$watch('params.isDataReloadRequired()', onDataReloadStatusChange);
 
       $scope.expanded = true;
-      $attrs.$observe('expanded', function (newVal) {
-        $scope.expanded = (newVal != 'false');
+      $scope.$watch($attrs.listView, function (newVal) {
+        $scope.expanded = !newVal;
       });
 
 
@@ -1307,15 +1307,16 @@
             else
               el.attr('ng-if', 'expanded');
 
+            //Don't add to column if the single cell
+            if (el.attr('single')) {
+              return;
+            }
 
             if (el.attr('ignore-cell') && 'true' === el.attr('ignore-cell')) {
               return;
             }
 
-            //Don't add to column if the single cell
-            if (el.attr('single')) {
-              return;
-            }
+
 
             var getAttrValue = function (attr) {
               return el.attr('x-data-' + attr) || el.attr('data-' + attr) || el.attr(attr);
@@ -1349,9 +1350,9 @@
               filter: parsedAttribute('filter'),
               headerTemplateURL: parsedAttribute('header'),
               filterData: parsedAttribute('filter-data'),
-              /*show: (el.attr("ng-if") ? function (scope) {
+              show: (el.attr("ng-if") ? function (scope) {
                 return $parse(el.attr("ng-if"))(scope);
-              } : undefined)*/
+              } : undefined)
             });
           });
           return function (scope, element, attrs, controller) {
@@ -1375,69 +1376,81 @@
  * @license New BSD License <http://creativecommons.org/licenses/BSD/>
  */
 
-(function(){
+(function () {
 
-    /**
-     * @ngdoc directive
-     * @name ngTableDynamic
-     * @module ngTable
-     * @restrict A
-     *
-     * @description
-     * A dynamic version of the {@link ngTable ngTable} directive that accepts a dynamic list of columns
-     * definitions to render
-     */
-    angular.module('ngTable').directive('ngTableDynamic', ['$parse', function ($parse){
+  /**
+   * @ngdoc directive
+   * @name ngTableDynamic
+   * @module ngTable
+   * @restrict A
+   *
+   * @description
+   * A dynamic version of the {@link ngTable ngTable} directive that accepts a dynamic list of columns
+   * definitions to render
+   */
+  angular.module('ngTable').directive('ngTableDynamic', ['$parse', function ($parse) {
 
-        return {
-            restrict: 'A',
-            priority: 1001,
-            scope: true,
-            controller: 'ngTableController',
-            compile: function(tElement) {
-                var row;
+    return {
+      restrict: 'A',
+      priority: 1001,
+      scope: true,
+      controller: 'ngTableController',
+      compile: function (tElement) {
+        var row;
 
-                // IE 8 fix :not(.ng-table-group) selector
-                angular.forEach(angular.element(tElement.find('tr')), function(tr) {
-                    tr = angular.element(tr);
-                    if (!tr.hasClass('ng-table-group') && !row) {
-                        row = tr;
-                    }
-                });
-                if (!row) {
-                    return;
-                }
+        // IE 8 fix :not(.ng-table-group) selector
+        angular.forEach(angular.element(tElement.find('tr')), function (tr) {
+          tr = angular.element(tr);
+          if (!tr.hasClass('ng-table-group') && !row) {
+            row = tr;
+          }
+        });
+        if (!row) {
+          return;
+        }
 
-                angular.forEach(row.find('td'), function(item) {
-                    var el = angular.element(item);
-                    var getAttrValue = function(attr){
-                        return el.attr('x-data-' + attr) || el.attr('data-' + attr) || el.attr(attr);
-                    };
 
-                    // this used in responsive table
-                    var titleExpr = getAttrValue('title');
-                    if (!titleExpr){
-                        el.attr('data-title-text', '{{$columns[$index].titleAlt(this) || $columns[$index].title(this)}}');
-                    }
-                    var showExpr = el.attr('ng-if');
-                    if (!showExpr){
-                        el.attr('ng-if', '$columns[$index].show(this)');
-                    }
-                });
-                return function (scope, element, attrs, controller) {
-                    var expr = controller.parseNgTableDynamicExpr(attrs.ngTableDynamic);
+        angular.forEach(row.find('td'), function (item) {
+          var el = angular.element(item);
 
-                    controller.setupBindingsToInternalScope(expr.tableParams);
-                    controller.compileDirectiveTemplates();
+          if (el.attr('single'))
+            el.attr('ng-if', '!expanded');
+          else
+            el.attr('ng-if', 'expanded');
 
-                    scope.$watchCollection(expr.columns, function (newCols/*, oldCols*/) {
-                        scope.$columns = controller.buildColumns(newCols);
-                        controller.loadFilterData(scope.$columns);
-                    });
-                };
-            }
+          //Don't add to column if the single cell
+          if (el.attr('single')) {
+            return;
+          }
+
+          var getAttrValue = function (attr) {
+            return el.attr('x-data-' + attr) || el.attr('data-' + attr) || el.attr(attr);
+          };
+
+          // this used in responsive table
+          var titleExpr = getAttrValue('title');
+          if (!titleExpr) {
+            el.attr('data-title-text', '{{$columns[$index].titleAlt(this) || $columns[$index].title(this)}}');
+          }
+          var showExpr = el.attr('ng-if');
+          if (!showExpr) {
+            el.attr('ng-if', '$columns[$index].show(this)');
+          }
+        });
+        return function (scope, element, attrs, controller) {
+          var expr = controller.parseNgTableDynamicExpr(attrs.ngTableDynamic);
+
+          controller.setupBindingsToInternalScope(expr.tableParams);
+          controller.compileDirectiveTemplates();
+
+          scope.$watchCollection(expr.columns, function (newCols/*, oldCols*/) {
+            scope.$columns = controller.buildColumns(newCols);
+            controller.loadFilterData(scope.$columns);
+          });
         };
-    }]);
+      }
+    };
+  }]);
 })();
 
 /**
@@ -1615,7 +1628,7 @@ angular.module('ngTable').run(['$templateCache', function ($templateCache) {
 	$templateCache.put('ng-table/filters/select-multiple.html', '<select ng-options="data.id as data.title for data in $column.data" ng-disabled="$filterRow.disabled" multiple ng-multiple="true" ng-model="params.filter()[name]" class="filter filter-select-multiple form-control" name="{{name}}"> </select> ');
 	$templateCache.put('ng-table/filters/select.html', '<select ng-options="data.id as data.title for data in $column.data" ng-disabled="$filterRow.disabled" ng-model="params.filter()[name]" class="filter filter-select form-control" name="{{name}}"> <option style="display:none" value=""></option> </select> ');
 	$templateCache.put('ng-table/filters/text.html', '<input type="text" name="{{name}}" ng-disabled="$filterRow.disabled" ng-model="params.filter()[name]" class="input-filter form-control"/> ');
-	$templateCache.put('ng-table/header.html', '<ng-table-sorter-row></ng-table-sorter-row><ng-table-filter-row></ng-table-filter-row>{{params.search;}}');
+	$templateCache.put('ng-table/header.html', '<ng-table-sorter-row></ng-table-sorter-row> <ng-table-filter-row></ng-table-filter-row>');
 	$templateCache.put('ng-table/pager.html', '<div class="ng-cloak ng-table-pager" ng-if="params.data.length"> <div ng-if="params.settings().counts.length" class="ng-table-counts btn-group pull-right"> <button ng-repeat="count in params.settings().counts" type="button" ng-class="{\'active\':params.count()==count}" ng-click="params.count(count)" class="btn btn-default"> <span ng-bind="count"></span> </button> </div> <ul class="pagination ng-table-pagination"> <li ng-class="{\'disabled\': !page.active && !page.current, \'active\': page.current}" ng-repeat="page in pages" ng-switch="page.type"> <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">&laquo;</a> <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a> <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="next" ng-click="params.page(page.number)" href="">&raquo;</a> </li> </ul> </div> ');
 	$templateCache.put('ng-table/sorterRow.html', '<tr> <th ng-if="expanded" title="{{$column.headerTitle(this)}}" ng-repeat="$column in $columns" ng-class="{ \'sortable\': $column.sortable(this), \'sort-asc\': params.sorting()[$column.sortable(this)]==\'asc\', \'sort-desc\': params.sorting()[$column.sortable(this)]==\'desc\' }" ng-click="sortBy($column, $event)" ng-if="$column.show(this)" ng-init="template=$column.headerTemplateURL(this)" class="header {{$column.class(this)}}"> <div ng-if="!template" class="ng-table-header" ng-class="{\'sort-indicator\': params.settings().sortingIndicator==\'div\'}"> <span ng-bind="$column.title(this)" ng-class="{\'sort-indicator\': params.settings().sortingIndicator==\'span\'}"></span> </div> <div ng-if="template" ng-include="template"></div> </th> <td ng-if="!expanded" style="background: #eee; padding-top: 3px; padding-bottom: 3px; text-align:center"> <span dropdown class="dropdown"> <a href id="simple-dropdown" dropdown-toggle style="font-size: 12px; color:#222"> Sort By &or; </a> <ul class="dropdown-menu" aria-labelledby="simple-dropdown"> <li ng-repeat="$column in $columns" ng-class="{ \'active\': params.sorting()[$column.sortable(this)], \'sort-asc\': params.sorting()[$column.sortable(this)]==\'asc\', \'sort-desc\': params.sorting()[$column.sortable(this)]==\'desc\' }"> <a ng-if="$column.sortable(this)" ng-click="sortBy($column, $event)"> {{$column.title(this)}} </a> </li> </ul> </span> </td> </tr> ');
 }]);

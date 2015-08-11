@@ -47,15 +47,16 @@
             else
               el.attr('ng-if', 'expanded');
 
+            //Don't add to column if the single cell
+            if (el.attr('single')) {
+              return;
+            }
 
             if (el.attr('ignore-cell') && 'true' === el.attr('ignore-cell')) {
               return;
             }
 
-            //Don't add to column if the single cell
-            if (el.attr('single')) {
-              return;
-            }
+
 
             var getAttrValue = function (attr) {
               return el.attr('x-data-' + attr) || el.attr('data-' + attr) || el.attr(attr);
@@ -89,9 +90,9 @@
               filter: parsedAttribute('filter'),
               headerTemplateURL: parsedAttribute('header'),
               filterData: parsedAttribute('filter-data'),
-              /*show: (el.attr("ng-if") ? function (scope) {
+              show: (el.attr("ng-if") ? function (scope) {
                 return $parse(el.attr("ng-if"))(scope);
-              } : undefined)*/
+              } : undefined)
             });
           });
           return function (scope, element, attrs, controller) {

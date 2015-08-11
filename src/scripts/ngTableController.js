@@ -75,8 +75,8 @@
       $scope.$watch('params.isDataReloadRequired()', onDataReloadStatusChange);
 
       $scope.expanded = true;
-      $attrs.$observe('expanded', function (newVal) {
-        $scope.expanded = (newVal != 'false');
+      $scope.$watch($attrs.listView, function (newVal) {
+        $scope.expanded = !newVal;
       });
 
 
