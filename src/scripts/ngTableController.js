@@ -102,7 +102,8 @@
           }
           var paginationTemplate = angular.element(document.createElement('div')).attr({
             'ng-table-pagination': 'params',
-            'template-url': 'templates.pagination'
+            'template-url': 'templates.pagination',
+            'expanded': 'expanded'
           });
           $element.after(paginationTemplate);
           if (headerTemplate) {

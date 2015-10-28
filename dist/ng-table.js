@@ -1141,7 +1141,8 @@
           }
           var paginationTemplate = angular.element(document.createElement('div')).attr({
             'ng-table-pagination': 'params',
-            'template-url': 'templates.pagination'
+            'template-url': 'templates.pagination',
+            'expanded': 'expanded'
           });
           $element.after(paginationTemplate);
           if (headerTemplate) {
@@ -1461,47 +1462,48 @@
  * @license New BSD License <http://creativecommons.org/licenses/BSD/>
  */
 
-(function(){
-    /**
-     * @ngdoc directive
-     * @name ngTablePagination
-     * @module ngTable
-     * @restrict A
-     */
-    angular.module('ngTable').directive('ngTablePagination', ['$compile', 'ngTableEventsChannel',
-        function($compile, ngTableEventsChannel) {
-            'use strict';
+(function () {
+  /**
+   * @ngdoc directive
+   * @name ngTablePagination
+   * @module ngTable
+   * @restrict A
+   */
+  angular.module('ngTable').directive('ngTablePagination', ['$compile', 'ngTableEventsChannel',
+    function ($compile, ngTableEventsChannel) {
+      'use strict';
 
-            return {
-                restrict: 'A',
-                scope: {
-                    'params': '=ngTablePagination',
-                    'templateUrl': '='
-                },
-                replace: false,
-                link: function(scope, element/*, attrs*/) {
+      return {
+        restrict: 'A',
+        scope: {
+          'params': '=ngTablePagination',
+          'templateUrl': '=',
+          'expanded': '='
+        },
+        replace: false,
+        link: function (scope, element/*, attrs*/) {
 
-                    ngTableEventsChannel.onAfterReloadData(function(pubParams) {
-                        scope.pages = pubParams.generatePagesArray();
-                    }, scope, function(pubParams){
-                        return pubParams === scope.params;
-                    });
+          ngTableEventsChannel.onAfterReloadData(function (pubParams) {
+            scope.pages = pubParams.generatePagesArray();
+          }, scope, function (pubParams) {
+            return pubParams === scope.params;
+          });
 
-                    scope.$watch('templateUrl', function(templateUrl) {
-                        if (angular.isUndefined(templateUrl)) {
-                            return;
-                        }
-                        var template = angular.element(document.createElement('div'));
-                        template.attr({
-                            'ng-include': 'templateUrl'
-                        });
-                        element.append(template);
-                        $compile(template)(scope);
-                    });
-                }
-            };
+          scope.$watch('templateUrl', function (templateUrl) {
+            if (angular.isUndefined(templateUrl)) {
+              return;
+            }
+            var template = angular.element(document.createElement('div'));
+            template.attr({
+              'ng-include': 'templateUrl'
+            });
+            element.append(template);
+            $compile(template)(scope);
+          });
         }
-    ]);
+      };
+    }
+  ]);
 
 })();
 
@@ -1629,7 +1631,7 @@ angular.module('ngTable').run(['$templateCache', function ($templateCache) {
 	$templateCache.put('ng-table/filters/select.html', '<select ng-options="data.id as data.title for data in $column.data" ng-disabled="$filterRow.disabled" ng-model="params.filter()[name]" class="filter filter-select form-control" name="{{name}}"> <option style="display:none" value=""></option> </select> ');
 	$templateCache.put('ng-table/filters/text.html', '<input type="text" name="{{name}}" ng-disabled="$filterRow.disabled" ng-model="params.filter()[name]" class="input-filter form-control"/> ');
 	$templateCache.put('ng-table/header.html', '<ng-table-sorter-row></ng-table-sorter-row> <ng-table-filter-row></ng-table-filter-row>');
-	$templateCache.put('ng-table/pager.html', '<div class="ng-cloak ng-table-pager" ng-if="params.data.length"> <div ng-if="params.settings().counts.length" class="ng-table-counts btn-group pull-right" ng-hide="expanded"> <button ng-repeat="count in params.settings().counts" type="button" ng-class="{\'active\':params.count()==count}" ng-click="params.count(count)" class="btn btn-default"> <span ng-bind="count"></span> </button> </div> <ul class="pagination ng-table-pagination" ng-class="{\'pagination-sm\': expanded}"> <li ng-class="{\'disabled\': !page.active && !page.current, \'active\': page.current}" ng-repeat="page in pages" ng-switch="page.type"> <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">&laquo;</a> <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a> <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="next" ng-click="params.page(page.number)" href="">&raquo;</a> </li> </ul> </div> ');
+	$templateCache.put('ng-table/pager.html', '<div class="ng-cloak ng-table-pager" ng-if="params.data.length"> <div ng-if="params.settings().counts.length" class="ng-table-counts btn-group pull-right" ng-hide="!expanded"> <button ng-repeat="count in params.settings().counts" type="button" ng-class="{\'active\':params.count()==count}" ng-click="params.count(count)" class="btn btn-default"> <span ng-bind="count"></span> </button> </div> <ul class="pagination ng-table-pagination" ng-class="{\'pagination-sm\': !expanded}"> <li ng-class="{\'disabled\': !page.active && !page.current, \'active\': page.current}" ng-repeat="page in pages" ng-switch="page.type"> <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">&laquo;</a> <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a> <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a> <a ng-switch-when="next" ng-click="params.page(page.number)" href="">&raquo;</a> </li> </ul> </div> ');
 	$templateCache.put('ng-table/sorterRow.html', '<tr> <th ng-if="expanded" title="{{$column.headerTitle(this)}}" ng-repeat="$column in $columns" ng-class="{ \'sortable\': $column.sortable(this), \'sort-asc\': params.sorting()[$column.sortable(this)]==\'asc\', \'sort-desc\': params.sorting()[$column.sortable(this)]==\'desc\' }" ng-click="sortBy($column, $event)" ng-if="$column.show(this)" ng-init="template=$column.headerTemplateURL(this)" class="header {{$column.class(this)}}"> <div ng-if="!template" class="ng-table-header" ng-class="{\'sort-indicator\': params.settings().sortingIndicator==\'div\'}"> <span ng-bind="$column.title(this)" ng-class="{\'sort-indicator\': params.settings().sortingIndicator==\'span\'}"></span> </div> <div ng-if="template" ng-include="template"></div> </th> <td ng-if="!expanded" style="background: #eee; padding-top: 3px; padding-bottom: 3px; text-align:center"> <span dropdown class="dropdown"> <a href id="simple-dropdown" dropdown-toggle style="font-size: 12px; color:#222"> Sort By &or; </a> <ul class="dropdown-menu" aria-labelledby="simple-dropdown"> <li ng-repeat="$column in $columns" ng-class="{ \'active\': params.sorting()[$column.sortable(this)], \'sort-asc\': params.sorting()[$column.sortable(this)]==\'asc\', \'sort-desc\': params.sorting()[$column.sortable(this)]==\'desc\' }"> <a ng-if="$column.sortable(this)" ng-click="sortBy($column, $event)"> {{$column.title(this)}} </a> </li> </ul> </span> </td> </tr> ');
 }]);
     return angular.module('ngTable');
