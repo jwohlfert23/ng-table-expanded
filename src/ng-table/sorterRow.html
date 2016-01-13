@@ -25,7 +25,7 @@
       <a href id="simple-dropdown" uib-dropdown-toggle style="font-size: 12px; color:#222">
           Sort By &or;
       </a>
-      <ul class="uib-dropdown-menu" aria-labelledby="simple-dropdown">
+      <ul uib-dropdown-menu aria-labelledby="simple-dropdown">
           <li ng-repeat="$column in $columns" ng-class="{
               'active': params.sorting()[$column.sortable(this)],
                     'sort-asc': params.sorting()[$column.sortable(this)]=='asc',
