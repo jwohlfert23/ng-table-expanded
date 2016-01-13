@@ -21,11 +21,11 @@
     </th>
 
     <td ng-if="!expanded" style="background: #eee; padding-top: 3px; padding-bottom: 3px; text-align:center">
-       <span dropdown class="dropdown">
-      <a href id="simple-dropdown" dropdown-toggle style="font-size: 12px; color:#222">
+       <span uib-dropdown class="dropdown">
+      <a href id="simple-dropdown" uib-dropdown-toggle style="font-size: 12px; color:#222">
           Sort By &or;
       </a>
-      <ul class="dropdown-menu" aria-labelledby="simple-dropdown">
+      <ul class="uib-dropdown-menu" aria-labelledby="simple-dropdown">
           <li ng-repeat="$column in $columns" ng-class="{
               'active': params.sorting()[$column.sortable(this)],
                     'sort-asc': params.sorting()[$column.sortable(this)]=='asc',
